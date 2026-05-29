@@ -30,7 +30,7 @@ COPY --from=builder /app/node_modules/better-sqlite3 ./node_modules/better-sqlit
 COPY --from=builder /app/node_modules/bindings ./node_modules/bindings
 COPY --from=builder /app/node_modules/file-uri-to-path ./node_modules/file-uri-to-path
 
-RUN mkdir -p /data && chown nextjs:nodejs /data
+RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
 
 USER nextjs
 EXPOSE 3000
