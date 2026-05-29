@@ -18,19 +18,19 @@ export function getDb(): Database.Database {
 }
 
 const TEAM_PASSWORDS: Record<string, string> = {
-  fish: 'fish25',
-  keller: 'keller25',
-  toffler: 'toffler25',
-  nick: 'nick25',
-  nate: 'nate25',
-  jimmy: 'jimmy25',
-  depo: 'depo25',
-  james: 'james25',
-  adam: 'adam25',
+  fish: 'fish2525',
+  keller: 'coys',
+  toffler: 'toffles',
+  nick: 'yammer',
+  nate: 'fiegerisland',
+  jimmy: 'madison',
+  depo: 'sug',
+  james: 'wakelol',
+  adam: 'sugsug',
   norton: 'norton25',
 };
 
-export const ADMIN_PASSWORD = 'commish25';
+export const ADMIN_PASSWORD = 'commish2525';
 
 function initSchema(db: Database.Database) {
   db.exec(`
