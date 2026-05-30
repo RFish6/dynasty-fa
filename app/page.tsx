@@ -233,7 +233,8 @@ export default function Home() {
             </div>
 
             {/* Player table */}
-            <div className="rounded-xl border border-gray-800 overflow-x-auto">
+            <div className="rounded-xl border border-gray-800 overflow-hidden">
+              <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
               <table className="w-full text-sm min-w-[600px]">
                 <thead>
                   <tr className="bg-gray-900 text-gray-400 text-xs uppercase">
@@ -313,6 +314,7 @@ export default function Home() {
                   })}
                 </tbody>
               </table>
+              </div>
             </div>
 
             {isAdmin && (
