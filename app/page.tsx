@@ -233,8 +233,8 @@ export default function Home() {
             </div>
 
             {/* Player table */}
-            <div className="rounded-xl border border-gray-800 overflow-hidden">
-              <table className="w-full text-sm">
+            <div className="rounded-xl border border-gray-800 overflow-x-auto">
+              <table className="w-full text-sm min-w-[600px]">
                 <thead>
                   <tr className="bg-gray-900 text-gray-400 text-xs uppercase">
                     <th className="text-left px-4 py-3">Player</th>
@@ -333,8 +333,8 @@ export default function Home() {
             {state.signedPlayers.length === 0 ? (
               <div className="text-gray-500 text-center py-12">No players signed yet</div>
             ) : (
-              <div className="rounded-xl border border-gray-800 overflow-hidden">
-                <table className="w-full text-sm">
+              <div className="rounded-xl border border-gray-800 overflow-x-auto">
+                <table className="w-full text-sm min-w-[500px]">
                   <thead>
                     <tr className="bg-gray-900 text-gray-400 text-xs uppercase">
                       <th className="text-left px-4 py-3">Player</th>
