@@ -208,14 +208,14 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="py-6">
         {/* FA Tab */}
         {tab === 'fa' && (
           <div>
 
 
             {/* Position filter */}
-            <div className="flex gap-2 mb-4 flex-wrap items-center">
+            <div className="max-w-7xl mx-auto px-4 flex gap-2 mb-4 flex-wrap items-center">
               {(['ALL', 'QB', 'RB', 'WR', 'TE'] as PosFilter[]).map(pos => (
                 <button
                   key={pos}
@@ -233,11 +233,10 @@ export default function Home() {
             </div>
 
             {/* Player table */}
-            <div className="rounded-xl border border-gray-800 overflow-hidden">
-              <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-              <table className="w-full text-sm min-w-[600px]">
+            <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <table style={{ minWidth: '600px', width: '100%', fontSize: '0.875rem' }}>
                 <thead>
-                  <tr className="bg-gray-900 text-gray-400 text-xs uppercase">
+                  <tr className="bg-gray-900 text-gray-400 text-xs uppercase border-b border-gray-800">
                     <th className="text-left px-4 py-3">Player</th>
                     <th className="text-left px-4 py-3">Pos</th>
                     <th className="text-left px-4 py-3">Yrs</th>
@@ -314,13 +313,12 @@ export default function Home() {
                   })}
                 </tbody>
               </table>
-              </div>
             </div>
 
             {isAdmin && (
               <button
                 onClick={() => setImportOpen(true)}
-                className="mt-4 text-xs text-gray-500 hover:text-gray-300 underline"
+                className="mt-4 ml-4 text-xs text-gray-500 hover:text-gray-300 underline"
               >
                 Import players from CSV / Google Sheet
               </button>
@@ -330,7 +328,7 @@ export default function Home() {
 
         {/* Signed Tab */}
         {tab === 'signed' && (
-          <div>
+          <div className="max-w-7xl mx-auto px-4">
             <h2 className="text-lg font-semibold mb-4">Signed Players</h2>
             {state.signedPlayers.length === 0 ? (
               <div className="text-gray-500 text-center py-12">No players signed yet</div>
@@ -371,7 +369,7 @@ export default function Home() {
 
         {/* Budgets Tab */}
         {tab === 'budgets' && (
-          <div>
+          <div className="max-w-7xl mx-auto px-4">
             <h2 className="text-lg font-semibold mb-4">Team Budgets</h2>
             <div className="grid gap-3 md:grid-cols-2">
               {state.budgets
@@ -385,7 +383,9 @@ export default function Home() {
 
         {/* Admin Tab */}
         {tab === 'admin' && (
-          <AdminPanel state={state} onRefresh={refresh} />
+          <div className="max-w-7xl mx-auto px-4">
+            <AdminPanel state={state} onRefresh={refresh} />
+          </div>
         )}
       </div>
 
