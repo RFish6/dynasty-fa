@@ -6,6 +6,7 @@ import BudgetBar from './components/BudgetBar';
 import AdminPanel from './components/AdminPanel';
 import ImportModal from './components/ImportModal';
 import LoginScreen from './components/LoginScreen';
+import PlayerHistoryModal from './components/PlayerHistoryModal';
 
 const POSITION_COLORS: Record<string, string> = {
   QB: 'bg-red-100 text-red-800',
@@ -72,7 +73,7 @@ export interface BudgetInfo {
   bidCost: number;
 }
 
-type Tab = 'fa' | 'signed' | 'budgets' | 'admin';
+type Tab = 'fa' | 'mybids' | 'poles' | 'signed' | 'budgets' | 'admin';
 type PosFilter = 'ALL' | 'QB' | 'RB' | 'WR' | 'TE';
 
 export default function Home() {
@@ -80,6 +81,7 @@ export default function Home() {
   const [selectedTeam, setSelectedTeam] = useState<string>('');
   const [role, setRole] = useState<'team' | 'admin' | null>(null);
   const [bidModal, setBidModal] = useState<PlayerRow | null>(null);
+  const [historyPlayer, setHistoryPlayer] = useState<PlayerRow | null>(null);
   const [tab, setTab] = useState<Tab>('fa');
   const [posFilter, setPosFilter] = useState<PosFilter>('ALL');
   const [importOpen, setImportOpen] = useState(false);
@@ -104,9 +106,12 @@ export default function Home() {
 
   // Restore session from localStorage
   useEffect(() => {
+    // Clear any legacy keys from before the login system
+    localStorage.removeItem('selectedTeam');
+
     const savedTeam = localStorage.getItem('fa_team');
     const savedRole = localStorage.getItem('fa_role') as 'team' | 'admin' | null;
-    if (savedTeam && savedRole) {
+    if (savedTeam && (savedRole === 'team' || savedRole === 'admin')) {
       setSelectedTeam(savedTeam);
       setRole(savedRole);
     }
@@ -194,7 +199,7 @@ export default function Home() {
 
         {/* Tabs */}
         <div className="max-w-7xl mx-auto px-4 flex gap-1 pb-2">
-          {(['fa', 'signed', 'budgets', ...(isAdmin ? ['admin'] : [])] as Tab[]).map(t => (
+          {(['fa', ...(!isAdmin ? ['mybids'] : []), 'poles', 'signed', 'budgets', ...(isAdmin ? ['admin'] : [])] as Tab[]).map(t => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -202,7 +207,7 @@ export default function Home() {
                 tab === t ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800'
               }`}
             >
-              {t === 'fa' ? 'Free Agency' : t === 'signed' ? 'Signed' : t === 'budgets' ? 'Budgets' : 'Admin'}
+              {t === 'fa' ? 'Free Agency' : t === 'mybids' ? 'My Bids' : t === 'poles' ? 'Pole Position' : t === 'signed' ? 'Signed' : t === 'budgets' ? 'Budgets' : 'Admin'}
             </button>
           ))}
         </div>
@@ -259,7 +264,7 @@ export default function Home() {
                     const iAmPP = player.pp_team_id === selectedTeam;
 
                     return (
-                      <tr key={player.id} className={`hover:bg-gray-900/50 ${iAmPP ? 'bg-indigo-950/30' : ''}`}>
+                      <tr key={player.id} onClick={() => setHistoryPlayer(player)} className={`cursor-pointer hover:bg-gray-800/60 ${iAmPP ? 'bg-indigo-950/30' : ''}`}>
                         <td className="px-4 py-3 font-medium text-white">{player.name}</td>
                         <td className="px-4 py-3">
                           <span className={`px-2 py-0.5 rounded text-xs font-bold ${POSITION_COLORS[player.position] || 'bg-gray-700 text-gray-300'}`}>
@@ -297,7 +302,7 @@ export default function Home() {
                         <td className="px-4 py-3">
                           {!isAdmin && (
                             <button
-                              onClick={() => setBidModal(player)}
+                              onClick={e => { e.stopPropagation(); setBidModal(player); }}
                               className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${
                                 myBid
                                   ? 'bg-indigo-700 hover:bg-indigo-600 text-white'
@@ -323,6 +328,109 @@ export default function Home() {
                 Import players from CSV / Google Sheet
               </button>
             )}
+          </div>
+        )}
+
+        {/* My Bids Tab */}
+        {tab === 'mybids' && (
+          <div className="max-w-7xl mx-auto px-4">
+            <h2 className="text-lg font-semibold mb-4">My Current Bids — Week {state.currentWeek}</h2>
+            {(() => {
+              const myBids = state.bids.filter(b => b.team_id === selectedTeam);
+              if (myBids.length === 0) return (
+                <div className="text-gray-500 text-center py-12">You have no bids this week</div>
+              );
+              return (
+                <div className="rounded-xl border border-gray-800 overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-900 text-gray-400 text-xs uppercase">
+                        <th className="text-left px-4 py-3">Player</th>
+                        <th className="text-left px-4 py-3">Pos</th>
+                        <th className="text-left px-4 py-3">Yrs</th>
+                        <th className="text-left px-4 py-3">Your Bid</th>
+                        <th className="text-left px-4 py-3">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-800">
+                      {myBids.map(bid => {
+                        const player = state.players.find(p => p.id === bid.player_id);
+                        const iAmPP = player?.pp_team_id === selectedTeam;
+                        return (
+                          <tr key={bid.id} onClick={() => player && setHistoryPlayer(player)} className="hover:bg-gray-800/60 cursor-pointer">
+                            <td className="px-4 py-3 font-medium text-white">{player?.name ?? '—'}</td>
+                            <td className="px-4 py-3">
+                              {player && <span className={`px-2 py-0.5 rounded text-xs font-bold ${POSITION_COLORS[player.position] || 'bg-gray-700 text-gray-300'}`}>{player.position}</span>}
+                            </td>
+                            <td className="px-4 py-3 text-gray-400">{player?.contract_years}yr</td>
+                            <td className="px-4 py-3 font-bold text-white">${bid.amount}</td>
+                            <td className="px-4 py-3">
+                              {iAmPP
+                                ? <span className="text-xs bg-indigo-800 text-indigo-200 px-2 py-0.5 rounded-full font-semibold">Pole Position 🏆</span>
+                                : <span className="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded-full">Bidding</span>
+                              }
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
+        {/* Pole Position Tab */}
+        {tab === 'poles' && (
+          <div className="max-w-7xl mx-auto px-4">
+            <h2 className="text-lg font-semibold mb-4">Current Pole Positions</h2>
+            {(() => {
+              const ppPlayers = state.players.filter(p => p.pp_team_id && !p.signed_team_id);
+              if (ppPlayers.length === 0) return (
+                <div className="text-gray-500 text-center py-12">No pole positions yet this week</div>
+              );
+              return (
+                <div className="rounded-xl border border-gray-800 overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-900 text-gray-400 text-xs uppercase">
+                        <th className="text-left px-4 py-3">Player</th>
+                        <th className="text-left px-4 py-3">Pos</th>
+                        <th className="text-left px-4 py-3">Yrs</th>
+                        <th className="text-left px-4 py-3">Team</th>
+                        <th className="text-left px-4 py-3">Amount</th>
+                        <th className="text-left px-4 py-3">Since</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-800">
+                      {ppPlayers
+                        .sort((a, b) => (a.pp_team_name ?? '').localeCompare(b.pp_team_name ?? ''))
+                        .map(player => {
+                          const isMe = player.pp_team_id === selectedTeam;
+                          return (
+                            <tr key={player.id} onClick={() => setHistoryPlayer(player)} className={`cursor-pointer hover:bg-gray-800/60 ${isMe ? 'bg-indigo-950/30' : ''}`}>
+                              <td className="px-4 py-3 font-medium text-white">{player.name}</td>
+                              <td className="px-4 py-3">
+                                <span className={`px-2 py-0.5 rounded text-xs font-bold ${POSITION_COLORS[player.position] || 'bg-gray-700 text-gray-300'}`}>{player.position}</span>
+                              </td>
+                              <td className="px-4 py-3 text-gray-400">{player.contract_years}yr</td>
+                              <td className="px-4 py-3">
+                                <span className={`text-sm font-semibold ${isMe ? 'text-indigo-300' : 'text-gray-200'}`}>
+                                  {player.pp_team_name}
+                                  {isMe && <span className="ml-1 text-xs bg-indigo-800 text-indigo-300 px-1.5 py-0.5 rounded">YOU</span>}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 font-bold text-green-400">${player.pp_amount}</td>
+                              <td className="px-4 py-3 text-gray-500 text-xs">Wk {player.pp_week}</td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })()}
           </div>
         )}
 
@@ -388,6 +496,15 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      {/* Player History Modal */}
+      {historyPlayer && (
+        <PlayerHistoryModal
+          player={historyPlayer}
+          selectedTeam={selectedTeam}
+          onClose={() => setHistoryPlayer(null)}
+        />
+      )}
 
       {/* Bid Modal */}
       {bidModal && selectedTeam && (
