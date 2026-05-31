@@ -22,10 +22,11 @@ interface BidHistoryRow {
 interface Props {
   player: PlayerRow;
   selectedTeam: string;
+  currentWeek: number;
   onClose: () => void;
 }
 
-export default function PlayerHistoryModal({ player, selectedTeam, onClose }: Props) {
+export default function PlayerHistoryModal({ player, selectedTeam, currentWeek, onClose }: Props) {
   const [bids, setBids] = useState<BidHistoryRow[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -35,8 +36,8 @@ export default function PlayerHistoryModal({ player, selectedTeam, onClose }: Pr
       .then(d => { setBids(d.bids); setLoading(false); });
   }, [player.id]);
 
-  // Everyone sees the full bid history across all teams
-  const visibleBids = bids;
+  // Past weeks: everyone's bids visible. Current week: only your own bid.
+  const visibleBids = bids.filter(b => b.week < currentWeek || b.team_id === selectedTeam);
 
   // Group by week
   const weeks = [...new Set(visibleBids.map(b => b.week))].sort((a, b) => b - a);

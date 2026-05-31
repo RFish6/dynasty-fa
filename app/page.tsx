@@ -502,6 +502,7 @@ export default function Home() {
         <PlayerHistoryModal
           player={historyPlayer}
           selectedTeam={selectedTeam}
+          currentWeek={state.currentWeek}
           onClose={() => setHistoryPlayer(null)}
         />
       )}
