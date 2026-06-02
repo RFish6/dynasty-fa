@@ -13,6 +13,8 @@ export default function AdminPanel({ state, onRefresh }: Props) {
   const [loading, setLoading] = useState(false);
   const [resetConfirm, setResetConfirm] = useState(false);
   const [resetMode, setResetMode] = useState<'test' | 'live'>('live');
+  const [importStatus, setImportStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [importError, setImportError] = useState('');
 
   async function handleAdvance() {
     if (!confirm(`Advance from Week ${state.currentWeek} to Week ${state.currentWeek + 1}?\n\nThis will sign any players whose pole position goes unchallenged.`)) return;
@@ -157,6 +159,66 @@ export default function AdminPanel({ state, onRefresh }: Props) {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Database Backup / Restore */}
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+        <h3 className="font-semibold mb-1">Database Backup &amp; Restore</h3>
+        <p className="text-xs text-gray-500 mb-4">Download a copy of the live database, or restore from a previously downloaded backup.</p>
+
+        <div className="flex flex-col gap-3">
+          {/* Download */}
+          <a
+            href="/api/admin/export-db"
+            download="fa.db"
+            className="inline-flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 text-gray-200 text-sm font-medium py-2 px-4 rounded-lg transition-colors"
+          >
+            ⬇ Download Current Database
+          </a>
+
+          {/* Upload / Restore */}
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Restore from backup (.db file)</label>
+            <input
+              type="file"
+              accept=".db"
+              className="hidden"
+              id="db-upload"
+              onChange={async e => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setImportStatus('loading');
+                setImportError('');
+                const form = new FormData();
+                form.append('file', file);
+                const res = await fetch('/api/admin/import-db', { method: 'POST', body: form });
+                const data = await res.json();
+                if (res.ok) {
+                  setImportStatus('success');
+                  setTimeout(() => { setImportStatus('idle'); onRefresh(); }, 1500);
+                } else {
+                  setImportStatus('error');
+                  setImportError(data.error || 'Upload failed');
+                }
+                e.target.value = '';
+              }}
+            />
+            <label
+              htmlFor="db-upload"
+              className={`cursor-pointer inline-flex items-center justify-center gap-2 text-sm font-medium py-2 px-4 rounded-lg transition-colors w-full text-center ${
+                importStatus === 'loading' ? 'bg-gray-700 text-gray-400' :
+                importStatus === 'success' ? 'bg-green-900 text-green-300' :
+                importStatus === 'error' ? 'bg-red-900 text-red-300' :
+                'bg-gray-800 hover:bg-gray-700 text-gray-200'
+              }`}
+            >
+              {importStatus === 'loading' ? 'Uploading...' :
+               importStatus === 'success' ? '✓ Restored successfully' :
+               '⬆ Upload & Restore Database'}
+            </label>
+            {importStatus === 'error' && <p className="text-red-400 text-xs mt-1">{importError}</p>}
+          </div>
+        </div>
       </div>
 
       {/* Passwords */}

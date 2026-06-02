@@ -2,13 +2,20 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 
-const DB_PATH = process.env.DB_PATH || path.join('/app', 'data', 'fa.db');
+export const DB_PATH = process.env.DB_PATH || path.join('/app', 'data', 'fa.db');
 
-let db: Database.Database;
+let db: Database.Database | undefined;
+
+export function resetDb() {
+  if (db) {
+    try { db.close(); } catch {}
+    db = undefined;
+  }
+}
 
 export function getDb(): Database.Database {
   if (!db) {
-    const dir = path.dirname(DB_PATH);
+    const dir = path.dirname(DB_PATH as string);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     db = new Database(DB_PATH);
     db.pragma('journal_mode = WAL');
