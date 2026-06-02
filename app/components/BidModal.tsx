@@ -22,11 +22,6 @@ export default function BidModal({ player, teamId, teamName, currentBid, budget,
     ? player.pp_amount! + 1
     : 1;
 
-  // When updating an existing bid, that bid's amount is freed up again
-  const effectiveAvailable = budget
-    ? budget.available + (currentBid && player.pp_team_id !== teamId ? currentBid : 0)
-    : 9999;
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
@@ -105,7 +100,7 @@ export default function BidModal({ player, teamId, teamName, currentBid, budget,
             <input
               type="number"
               min={minBid}
-              max={effectiveAvailable}
+
               value={amount}
               onChange={e => setAmount(e.target.value)}
               className="flex-1 bg-gray-800 border border-gray-700 rounded-r-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
