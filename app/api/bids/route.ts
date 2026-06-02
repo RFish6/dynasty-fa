@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
 
   // Upsert bid
   if (existingBid) {
-    db.prepare('UPDATE bids SET amount = ?, created_at = datetime("now") WHERE id = ?').run(bidAmount, existingBid.id);
+    db.prepare("UPDATE bids SET amount = ?, created_at = datetime('now') WHERE id = ?").run(bidAmount, existingBid.id);
   } else {
     db.prepare('INSERT INTO bids (player_id, team_id, amount, week) VALUES (?, ?, ?, ?)').run(player_id, team_id, bidAmount, currentWeek);
   }
